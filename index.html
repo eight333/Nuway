@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nuway｜拼貼幾何文創客製零售</title>
+  <meta name="description" content="畢卡索風格的文創客製零售：T-Shirt、托特袋、海報、馬克杯等，支援即時客製預覽、購物車與結帳。公司：新派科技有限公司，統一編號：60485361。" />
+  <meta name="theme-color" content="#0ea5a6" />
+  <style>
+    :root{
+      --ink:#1f2937;      /* gray-800 */
+      --muted:#6b7280;    /* gray-500 */
+      --bg:#f8fafc;       /* slate-50 */
+      --card:#ffffff;     /* white */
+      --brand:#0ea5a6;    /* teal-500 */
+      --brand-dark:#0b8c8d;/* teal-600 */
+      --accent:#f59e0b;   /* amber-500 */
+      --danger:#ef4444;   /* red-500 */
+      --success:#10b981;  /* emerald-500 */
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",system-ui,-apple-system,Segoe UI,Roboto,Arial,"PingFang TC","Microsoft JhengHei",sans-serif;}
+    a{color:var(--brand);text-decoration:none}
+    header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.8);backdrop-filter:saturate(180%) blur(8px);border-bottom:1px solid #e5e7eb}
+    .wrap{max-width:1120px;margin:auto;padding:0 16px}
+    .row{display:flex;gap:16px;align-items:center;}
+    .space{flex:1}
+    .brand{display:flex;align-items:center;gap:12px;padding:14px 0}
+    .brand svg{width:36px;height:36px}
+    .brand h1{font-size:18px;margin:0}
+    nav a{padding:8px 10px;border-radius:10px}
+    nav a:hover{background:#eef2f7}
+    .cta{display:flex;gap:10px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid #e5e7eb;background:var(--card);cursor:pointer}
+    .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+    .btn.primary:hover{background:var(--brand-dark)}
+    .btn.ghost{background:transparent}
+    .btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+    .btn.success{background:var(--success);border-color:var(--success);color:#fff}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .hero{position:relative;overflow:hidden;border-bottom:1px solid #e5e7eb}
+    .hero .inner{padding:40px 0}
+    .hero h2{font-size:28px;margin:0 0 8px}
+    .hero p{color:var(--muted);margin:0 0 16px}
+    .card{background:var(--card);border:1px solid #e5e7eb;border-radius:18px;box-shadow:0 1px 1px rgba(0,0,0,.02)}
+    .card.pad{padding:16px}
+    .product-card{display:flex;flex-direction:column}
+    .product-thumb{height:160px;border-bottom:1px dashed #e5e7eb;display:grid;place-items:center;background:linear-gradient(135deg,#fff 0%,#f3f4f6 100%);border-radius:18px 18px 0 0;position:relative;overflow:hidden}
+    .product-body{padding:14px}
+    .product-title{font-weight:700;margin:0 0 6px}
+    .product-meta{color:var(--muted);font-size:14px;margin-bottom:10px}
+    .price{font-weight:800}
+
+    .sidecart{position:fixed;right:16px;bottom:16px;z-index:60}
+    .cart-fab{position:relative}
+    .badge{position:absolute;right:-6px;top:-6px;background:var(--accent);color:#111827;border-radius:999px;font-weight:800;font-size:12px;min-width:22px;height:22px;display:grid;place-items:center;border:1px solid #f59e0b}
+
+    .drawer{position:fixed;right:0;top:0;height:100%;width:min(420px,92vw);background:#fff;border-left:1px solid #e5e7eb;box-shadow:-10px 0 40px rgba(0,0,0,.06);transform:translateX(100%);transition:transform .32s ease;z-index:70;display:flex;flex-direction:column}
+    .drawer.open{transform:translateX(0)}
+    .drawer header{position:sticky;top:0;border-bottom:1px solid #e5e7eb;background:#fff}
+    .drawer .body{padding:14px;overflow:auto;flex:1}
+    .drawer .foot{padding:14px;border-top:1px solid #e5e7eb}
+    .line{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px dashed #e5e7eb}
+    .muted{color:var(--muted)}
+
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.38);display:none;z-index:80;overflow:auto}
+    .modal.open{display:grid;place-items:center}
+    /* make columns shrinkable to avoid overflow */
+    .panel{background:#fff;width:min(1040px,96vw);max-height:92vh;border-radius:18px;border:1px solid #e5e7eb;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,0.8fr)}
+    .panel .preview{padding:16px;border-right:1px solid #e5e7eb;min-width:0}
+    .panel .preview canvas{max-width:100%;height:auto;display:block}
+    .panel .form{padding:16px;overflow:auto;min-width:0}
+
+    .field{display:flex;flex-direction:column;margin-bottom:10px}
+    .field label{font-weight:700;margin-bottom:6px}
+    .field input,.field select,.field textarea{padding:10px;border:1px solid #e5e7eb;border-radius:12px;font:inherit}
+    .group{border:1px solid #e5e7eb;border-radius:14px;margin-bottom:12px;background:#fff}
+    .group summary{cursor:pointer;list-style:none;padding:12px 14px;font-weight:800;display:flex;align-items:center;gap:8px}
+    /* hide native marker to prevent double bullets */
+    .group summary::-webkit-details-marker{display:none}
+    /* correct arrow rotation states */
+    .group summary::before{content:'▸';display:inline-block;transform:rotate(0deg);transition:transform .2s ease}
+    .group[open] summary::before{transform:rotate(90deg)}
+    .group .inner{padding:12px 14px;border-top:1px solid #e5e7eb}
+
+    .optgrid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+    .optgrid .col-6{grid-column:span 12}
+    .optgrid .col-4{grid-column:span 12}
+    .optgrid .col-8{grid-column:span 12}
+    @media (min-width: 860px){
+      .optgrid .col-6{grid-column:span 6}
+      .optgrid .col-4{grid-column:span 4}
+      .optgrid .col-8{grid-column:span 8}
+    }
+
+    .checkout{margin:30px 0}
+    .kvs{display:grid;grid-template-columns:1fr auto;gap:8px}
+    .kvs .k{color:var(--muted)}
+    .divider{height:1px;background:#e5e7eb;margin:10px 0}
+
+    footer{margin-top:40px;border-top:1px solid #e5e7eb}
+    footer .inner{padding:20px 0;color:#6b7280;font-size:14px}
+
+    /* Picasso-esque shapes for the hero using pure CSS/SVG */
+    .hero-canvas{position:absolute;inset:0;pointer-events:none}
+    .shape{position:absolute;opacity:.9;filter:drop-shadow(0 4px 16px rgba(0,0,0,.08))}
+    .s1{left:-40px;top:-40px;width:180px;height:180px;background:#fde68a;transform:rotate(18deg) skew(6deg)}
+    .s2{right:10%;top:10%;width:140px;height:140px;background:#a7f3d0;border-radius:60% 40% 70% 30%/50% 50% 60% 40%;transform:rotate(-12deg)}
+    .s3{left:35%;bottom:-40px;width:220px;height:220px;background:#93c5fd;clip-path:polygon(0 55%,45% 0,100% 35%,85% 100%,20% 90%)}
+    .s4{right:-60px;bottom:-60px;width:220px;height:220px;background:#fca5a5;border-radius:12% 68% 20% 60% / 40% 30% 70% 60%}
+
+    @media (max-width: 860px){
+      .modal .panel{grid-template-columns:1fr}
+      .panel .preview{border-right:none;border-bottom:1px solid #e5e7eb}
+      .hero .inner{padding:26px 0}
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <div class="wrap row">
+      <div class="brand" aria-label="品牌">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#0ea5a6"/>
+              <stop offset="100%" stop-color="#f59e0b"/>
+            </linearGradient>
+          </defs>
+          <path d="M12 50 Q 50 6 88 50 T 12 50" fill="url(#g)"/>
+          <circle cx="50" cy="50" r="10" fill="#111827" />
+        </svg>
+        <h1>新派科技｜Nuway Lab 文創客製</h1>
+      </div>
+      <nav class="row" aria-label="導覽">
+        <a href="#products">商品</a>
+        <a href="#how">如何客製</a>
+        <a href="#checkout">結帳</a>
+      </nav>
+      <div class="space"></div>
+      <div class="cta">
+        <button class="btn ghost" id="openCart" aria-label="開啟購物車">🧺 購物車</button>
+        <button class="btn primary" onclick="scrollToCheckout()">前往結帳</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-canvas" aria-hidden="true">
+      <div class="shape s1"></div>
+      <div class="shape s2"></div>
+      <div class="shape s3"></div>
+      <div class="shape s4"></div>
+    </div>
+    <div class="wrap inner grid" style="grid-template-columns:repeat(12,1fr);align-items:center;gap:24px">
+      <div class="card pad" style="grid-column:span 7">
+        <h2>拼貼幾何風格 × 客製化文創</h2>
+        <p>透過幾何切割、拼貼構成與強烈配色，打造你的專屬風格。支援即時預覽、客製參數與購物車結帳。</p>
+        <div class="row" style="gap:10px;flex-wrap:wrap">
+          <button class="btn primary" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">開始選購</button>
+          <button class="btn" onclick="newDesign()">隨機配色靈感</button>
+        </div>
+      </div>
+      <div class="card" style="grid-column:span 5;overflow:hidden">
+        <canvas id="heroPreview" width="600" height="360" aria-label="設計預覽畫布"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <section id="products" style="margin:26px 0">
+      <h3 style="margin:0 0 12px">精選商品</h3>
+      <div class="grid" style="grid-template-columns:repeat(12,1fr)">
+        <!-- Product cards will be injected here -->
+      </div>
+    </section>
+
+    <section id="how" class="grid" style="grid-template-columns:repeat(12,1fr);gap:16px">
+      <div class="card pad" style="grid-column:span 12">
+        <h3>如何客製</h3>
+        <ol style="margin:0;padding-left:18px">
+          <li>選擇商品（T-Shirt、托特袋、海報、馬克杯…）。</li>
+          <li>設定配色、幾何圖形、筆觸、字樣與尺寸。</li>
+          <li>即時預覽設計，加入購物車。</li>
+          <li>在結帳頁填寫聯絡與寄送資訊，送出訂單。</li>
+        </ol>
+        <p class="muted">本頁面之圖案由演算法即時產生，僅具幾何/拼貼靈感，不直接使用或複製任何受著作權保護之作品。</p>
+      </div>
+    </section>
+
+    <section id="checkout" class="checkout">
+      <h3>結帳</h3>
+      <div class="grid" style="grid-template-columns:repeat(12,1fr);gap:16px">
+        <div class="card pad" style="grid-column:span 7">
+          <h4 style="margin-top:0">聯絡與寄送</h4>
+          <form id="checkoutForm">
+            <div class="grid" style="grid-template-columns:repeat(12,1fr);gap:12px">
+              <div class="field" style="grid-column:span 6">
+                <label for="name">姓名</label>
+                <input id="name" required placeholder="" />
+              </div>
+              <div class="field" style="grid-column:span 6">
+                <label for="email">Email</label>
+                <input id="email" type="email" required placeholder="" />
+              </div>
+              <div class="field" style="grid-column:span 6">
+                <label for="phone">電話</label>
+                <input id="phone" required placeholder="" />
+              </div>
+              <div class="field" style="grid-column:span 6">
+                <label for="zipcode">郵遞區號</label>
+                <input id="zipcode" required placeholder="" />
+              </div>
+              <div class="field" style="grid-column:span 12">
+                <label for="address">寄送地址</label>
+                <input id="address" required placeholder="" />
+              </div>
+              <div class="field" style="grid-column:span 12">
+                <label for="note">備註</label>
+                <textarea id="note" rows="3" placeholder=""></textarea>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="row" style="justify-content:flex-end;gap:10px">
+              <button class="btn" type="button" onclick="downloadOrderJSON()">下載訂單</button>
+              <button class="btn primary" type="submit">送出訂單</button>
+            </div>
+          </form>
+        </div>
+        <div class="card pad" style="grid-column:span 5">
+          <h4 style="margin-top:0">訂單摘要</h4>
+          <div id="orderSummary"></div>
+          <div class="divider"></div>
+          <div class="kvs">
+            <div class="k">小計</div><div id="sumSub">NT$0</div>
+            <div class="k">運費</div><div id="sumShip">NT$80</div>
+            <div class="k">合計</div><div id="sumTotal" style="font-weight:800">NT$0</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap inner">
+      <div>© <span id="year"></span> 新派科技有限公司｜統一編號：60485361</div>
+    </div>
+  </footer>
+
+  <!-- Floating Cart FAB -->
+  <div class="sidecart">
+    <button class="btn primary cart-fab" id="fabCart">🧺 購物車 <span class="badge" id="cartCount">0</span></button>
+  </div>
+
+  <!-- Cart Drawer -->
+  <aside class="drawer" id="cartDrawer" aria-label="購物車抽屜">
+    <header class="row wrap" style="padding:12px 16px">
+      <strong>你的購物車</strong>
+      <div class="space"></div>
+      <button class="btn" onclick="toggleCart(false)">關閉</button>
+    </header>
+    <div class="body" id="cartItems"></div>
+    <div class="foot">
+      <div class="kvs">
+        <div class="k">小計</div><div id="cartSub">NT$0</div>
+        <div class="k">運費（固定）</div><div>NT$80</div>
+        <div class="k">合計</div><div id="cartTotal" style="font-weight:800">NT$0</div>
+      </div>
+      <div class="row" style="margin-top:10px;gap:10px">
+        <button class="btn" onclick="clearCart()">清空</button>
+        <button class="btn success" onclick="scrollToCheckout();toggleCart(false)">前往結帳</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Customization Modal (streamlined) -->
+  <div class="modal" id="customModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="panel">
+      <div class="preview">
+        <canvas id="designPreview" width="720" height="480" aria-label="客製預覽畫布"></canvas>
+      </div>
+      <div class="form">
+        <div class="row" style="align-items:center">
+          <h4 id="modalTitle" style="margin:0">客製設定</h4>
+          <div class="space"></div>
+          <button class="btn" onclick="closeModal()">關閉</button>
+        </div>
+        <div class="divider"></div>
+
+        <details class="group" open>
+          <summary>① 商品與規格</summary>
+          <div class="inner optgrid">
+            <div class="field col-6">
+              <label>商品</label>
+              <select id="optProduct"></select>
+            </div>
+            <div class="field col-6">
+              <label>尺寸/規格</label>
+              <select id="optSize"></select>
+            </div>
+          </div>
+        </details>
+
+        <details class="group" open>
+          <summary>② 配色與圖形</summary>
+          <div class="inner optgrid">
+            <div class="field col-6">
+              <label>主色系</label>
+              <select id="optPalette">
+                <option value="teal">冷綠藍</option>
+                <option value="warm">暖日光</option>
+                <option value="mono">黑白灰</option>
+                <option value="fiesta">嘉年華</option>
+                <option value="rose">玫瑰調</option>
+              </select>
+            </div>
+            <div class="field col-6">
+              <label>點綴</label>
+              <select id="optAccent">
+                <option value="gold">金黃</option>
+                <option value="sky">天藍</option>
+                <option value="scarlet">鮮紅</option>
+                <option value="lime">螢光綠</option>
+              </select>
+            </div>
+            <div class="field col-6">
+              <label>幾何組態</label>
+              <select id="optGeometry">
+                <option value="cubes">立體切割</option>
+                <option value="facets">碎片拼貼</option>
+                <option value="lines">線條交錯</option>
+                <option value="faces">抽象面孔</option>
+              </select>
+            </div>
+            <div class="field col-6">
+              <label>筆觸</label>
+              <select id="optBrush">
+                <option value="flat">平塗</option>
+                <option value="noise">粗噪點</option>
+                <option value="hatch">排線</option>
+              </select>
+            </div>
+          </div>
+        </details>
+
+        <details class="group" open>
+          <summary>③ 字樣與數量</summary>
+          <div class="inner optgrid">
+            <div class="field col-8">
+              <label>自訂字樣</label>
+              <input id="optText" maxlength="20" placeholder="EX: CUBIST LIFE" />
+            </div>
+            <div class="field col-4">
+              <label>字樣位置</label>
+              <select id="optTextPos">
+                <option value="top">上方</option>
+                <option value="center">中央</option>
+                <option value="bottom">下方</option>
+              </select>
+            </div>
+            <div class="field col-6">
+              <label>數量</label>
+              <input id="optQty" type="number" min="1" value="1" />
+            </div>
+          </div>
+        </details>
+
+        <div class="row" style="justify-content:flex-end;gap:10px;margin-top:8px">
+          <button class="btn" onclick="randomizeDesign()">隨機靈感</button>
+          <button class="btn primary" onclick="addToCartFromModal()">加入購物車</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // ---------- Data ----------
+  const PRODUCTS = [
+    {id:'tee', name:'客製 T-Shirt', basePrice:690, sizes:['S','M','L','XL'], mock:'衣'},
+    {id:'tote', name:'帆布托特袋', basePrice:520, sizes:['Small','Medium','Large'], mock:'袋'},
+    {id:'poster', name:'美術海報', basePrice:480, sizes:['A4','A3','A2'], mock:'紙'},
+    {id:'mug', name:'馬克杯', basePrice:380, sizes:['300ml','450ml'], mock:'杯'},
+    {id:'phone', name:'手機殼', basePrice:590, sizes:['iPhone','Android 通用'], mock:'殼'},
+    {id:'notebook', name:'筆記本', basePrice:350, sizes:['A6','A5'], mock:'本'},
+  ];
+
+  const PRESETS = {
+    palette:{
+      teal:['#0ea5a6','#f59e0b','#e5e7eb','#1f2937','#84cc16'],
+      warm:['#fb923c','#f59e0b','#fca5a5','#fde68a','#1f2937'],
+      mono:['#111827','#4b5563','#9ca3af','#e5e7eb','#ffffff'],
+      fiesta:['#ef4444','#22c55e','#3b82f6','#f59e0b','#a855f7'],
+      rose:['#f43f5e','#fb7185','#fecdd3','#94a3b8','#111827']
+    },
+    accent:{gold:'#f59e0b',sky:'#38bdf8',scarlet:'#ef4444',lime:'#84cc16'}
+  };
+
+  let state = {
+    cart: JSON.parse(localStorage.getItem('cart')||'[]'),
+    modal:{open:false, product:PRODUCTS[0].id, size:PRODUCTS[0].sizes[0], palette:'teal', geometry:'cubes', brush:'flat', accent:'gold', text:'', textPos:'top', qty:1}
+  };
+
+  // ---------- Utilities ----------
+  const $ = s=>document.querySelector(s);
+  const $$ = s=>document.querySelectorAll(s);
+  const money = n=>`NT$${n.toLocaleString('zh-Hant-TW')}`;
+
+  function saveCart(){ localStorage.setItem('cart', JSON.stringify(state.cart)); renderCart(); renderOrderSummary(); updateCartBadge(); }
+  function updateCartBadge(){ $('#cartCount').textContent = state.cart.reduce((a,b)=>a+b.qty,0); }
+
+  function toggleCart(open){ $('#cartDrawer').classList.toggle('open', open ?? !$('#cartDrawer').classList.contains('open')); }
+  $('#fabCart').addEventListener('click',()=>toggleCart(true));
+  $('#openCart').addEventListener('click',()=>toggleCart(true));
+
+  function scrollToCheckout(){ document.getElementById('checkout').scrollIntoView({behavior:'smooth'}); }
+
+  // ---------- Products ----------
+  function renderProducts(){
+    const grid = document.querySelector('#products .grid');
+    grid.innerHTML = '';
+    PRODUCTS.forEach(p=>{
+      const card = document.createElement('div');
+      card.className = 'card product-card';
+      card.style.gridColumn = 'span 4';
+      card.innerHTML = `
+        <div class="product-thumb">
+          <canvas width="240" height="140" data-thumb="${p.id}"></canvas>
+        </div>
+        <div class="product-body">
+          <h4 class="product-title">${p.name}</h4>
+          <div class="product-meta">基礎價格 <span class="price">${money(p.basePrice)}</span></div>
+          <div class="row" style="gap:8px">
+            <button class="btn" data-customize="${p.id}">客製</button>
+            <button class="btn primary" data-quickadd="${p.id}">快速加入</button>
+          </div>
+        </div>`;
+      grid.appendChild(card);
+    });
+
+    // draw thumbs
+    PRODUCTS.forEach(p=>drawCubist($(`canvas[data-thumb="${p.id}"]`), {palette:'fiesta', geometry:'facets', brush:'hatch', accent:'sky', text:p.mock, textPos:'center'}));
+
+    // bind buttons
+    $$('button[data-customize]').forEach(btn=>btn.addEventListener('click',()=>openModal(btn.dataset.customize)));
+    $$('button[data-quickadd]').forEach(btn=>btn.addEventListener('click',()=>quickAdd(btn.dataset.quickadd)));
+  }
+
+  function quickAdd(pid){
+    const p = PRODUCTS.find(x=>x.id===pid);
+    const entry = {id:crypto.randomUUID(), pid:p.id, name:p.name, size:p.sizes[0], palette:'fiesta', geometry:'facets', brush:'flat', accent:'sky', text:'', textPos:'bottom', qty:1, price:p.basePrice};
+    state.cart.push(entry); saveCart(); toggleCart(true);
+  }
+
+  // ---------- Modal + Preview ----------
+  function openModal(pid){
+    const p = PRODUCTS.find(x=>x.id===pid);
+    state.modal = {open:true, product:p.id, size:p.sizes[0], palette:'teal', geometry:'cubes', brush:'flat', accent:'gold', text:'', textPos:'top', qty:1};
+    // fill selects
+    const optP = $('#optProduct'); optP.innerHTML = PRODUCTS.map(x=>`<option value="${x.id}">${x.name}</option>`).join(''); optP.value = p.id;
+    const optS = $('#optSize'); optS.innerHTML = p.sizes.map(s=>`<option>${s}</option>`).join('');
+    $('#optPalette').value='teal'; $('#optGeometry').value='cubes'; $('#optBrush').value='flat'; $('#optAccent').value='gold';
+    $('#optText').value=''; $('#optTextPos').value='top'; $('#optQty').value=1;
+
+    $('#customModal').classList.add('open');
+    renderDesignPreview();
+  }
+  function closeModal(){ $('#customModal').classList.remove('open'); }
+
+  ['optProduct','optSize','optPalette','optGeometry','optBrush','optAccent','optText','optTextPos','optQty'].forEach(id=>{
+    document.addEventListener('input', e=>{ if(e.target.id===id){ onOptionChange(); }});
+    document.addEventListener('change', e=>{ if(e.target.id===id){ onOptionChange(); }});
+  });
+  function onOptionChange(){
+    const pid = $('#optProduct').value; const p = PRODUCTS.find(x=>x.id===pid);
+    if(p && $('#optSize').options.length!==p.sizes.length){ $('#optSize').innerHTML = p.sizes.map(s=>`<option>${s}</option>`).join(''); }
+    state.modal.product = pid; state.modal.size = $('#optSize').value; state.modal.palette=$('#optPalette').value;
+    state.modal.geometry=$('#optGeometry').value; state.modal.brush=$('#optBrush').value; state.modal.accent=$('#optAccent').value;
+    state.modal.text=$('#optText').value.toUpperCase(); state.modal.textPos=$('#optTextPos').value; state.modal.qty=parseInt($('#optQty').value||1);
+    renderDesignPreview();
+  }
+
+  function randomizeDesign(){
+    const pal = Object.keys(PRESETS.palette)[Math.floor(Math.random()*5)];
+    const geom = ['cubes','facets','lines','faces'][Math.floor(Math.random()*4)];
+    const brush = ['flat','noise','hatch'][Math.floor(Math.random()*3)];
+    const acc = ['gold','sky','scarlet','lime'][Math.floor(Math.random()*4)];
+    $('#optPalette').value=pal; $('#optGeometry').value=geom; $('#optBrush').value=brush; $('#optAccent').value=acc;
+    onOptionChange();
+  }
+
+  function addToCartFromModal(){
+    const p = PRODUCTS.find(x=>x.id===state.modal.product);
+    const price = p.basePrice + (state.modal.size?.length||0) * 5; // tiny size-based bump
+    const entry = {id:crypto.randomUUID(), pid:p.id, name:p.name, size:state.modal.size, palette:state.modal.palette, geometry:state.modal.geometry, brush:state.modal.brush, accent:state.modal.accent, text:state.modal.text, textPos:state.modal.textPos, qty:state.modal.qty, price};
+    state.cart.push(entry); saveCart(); closeModal(); toggleCart(true);
+  }
+
+  function renderDesignPreview(){
+    const c = $('#designPreview'); drawCubist(c, state.modal);
+  }
+
+  // ---------- Drawing Cubist Composition ----------
+  function drawCubist(canvas, opts){
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0,0,W,H);
+
+    const palette = PRESETS.palette[opts.palette] || PRESETS.palette.teal;
+    const accent = PRESETS.accent[opts.accent] || '#f59e0b';
+
+    // background blocks
+    for(let i=0;i<9;i++){
+      ctx.fillStyle = palette[i % palette.length];
+      const w = rand(W*.2, W*.6), h = rand(H*.15, H*.5);
+      const x = rand(-W*.1, W*.9), y = rand(-H*.1, H*.9);
+      ctx.save();
+      ctx.translate(x,y); ctx.rotate(rand(-.35,.35));
+      roundRect(ctx, 0,0,w,h, rand(6,18)); ctx.fill();
+      if(opts.brush==='noise') addNoise(ctx, x,y,w,h, 14, .08);
+      if(opts.brush==='hatch') addHatch(ctx, x,y,w,h, 8);
+      ctx.restore();
+    }
+
+    // geometry overlays
+    ctx.globalAlpha = .85;
+    if(opts.geometry==='cubes' || opts.geometry==='facets'){
+      const n = opts.geometry==='cubes'?6:10;
+      for(let i=0;i<n;i++){
+        ctx.fillStyle = palette[(i+2)%palette.length];
+        ctx.beginPath();
+        ctx.moveTo(rand(0,W), rand(0,H));
+        for(let k=0;k<4;k++) ctx.lineTo(rand(0,W), rand(0,H));
+        ctx.closePath(); ctx.fill();
+      }
+    }
+    if(opts.geometry==='lines'){
+      for(let i=0;i<12;i++){
+        ctx.strokeStyle = palette[i%palette.length]; ctx.lineWidth = rand(2,8);
+        ctx.beginPath(); ctx.moveTo(rand(0,W), rand(0,H)); ctx.lineTo(rand(0,W), rand(0,H)); ctx.stroke();
+      }
+    }
+    if(opts.geometry==='faces'){
+      // abstract face: eye + nose + mouth as simple shapes
+      ctx.fillStyle = palette[0]; circle(ctx, W*0.35,H*0.35, rand(20,36));
+      ctx.fillStyle = palette[1]; circle(ctx, W*0.65,H*0.35, rand(12,28));
+      ctx.fillStyle = palette[2]; triangle(ctx, W*0.5,H*0.25, W*0.46,H*0.55, W*0.54,H*0.55);
+      ctx.fillStyle = palette[3]; roundRect(ctx, W*0.38,H*0.65, W*0.24,14, 7); ctx.fill();
+    }
+
+    // accent stroke
+    ctx.globalAlpha = 1; ctx.strokeStyle = accent; ctx.lineWidth = 4; ctx.strokeRect(6,6,W-12,H-12);
+
+    // text
+    if(opts.text){
+      ctx.fillStyle = '#111827'; ctx.font = '700 36px \'Noto Sans TC\',sans-serif'; ctx.textAlign='center';
+      let y = opts.textPos==='top'? 48 : opts.textPos==='center'? H/2 : H-24;
+      ctx.fillText(opts.text, W/2, y);
+    }
+  }
+
+  function rand(min,max){ return Math.random()*(max-min)+min }
+  function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+  function addNoise(ctx,x,y,w,h,density=10,alpha=.1){ const img = ctx.getImageData(x,y,w,h); for(let i=0;i< w*h/density; i++){ const px = Math.floor(Math.random()*w), py=Math.floor(Math.random()*h); const idx=((py*w)+px)*4; img.data[idx]=img.data[idx+1]=img.data[idx+2]=0; img.data[idx+3]=255*alpha; } ctx.putImageData(img,x,y); }
+  function addHatch(ctx,x,y,w,h,step=8){ ctx.save(); ctx.strokeStyle='rgba(17,24,39,.2)'; ctx.lineWidth=1; ctx.beginPath(); for(let i=-h;i<w;i+=step){ ctx.moveTo(x+i,y); ctx.lineTo(x+i+h,y+h); } ctx.stroke(); ctx.restore(); }
+  function circle(ctx,x,y,r){ ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.closePath(); ctx.fill(); }
+  function triangle(ctx,ax,ay,bx,by,cx,cy){ ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.lineTo(cx,cy); ctx.closePath(); ctx.fill(); }
+
+  // ---------- Cart ----------
+  function renderCart(){
+    const box = $('#cartItems'); box.innerHTML='';
+    if(state.cart.length===0){ box.innerHTML = '<p class="muted">購物車目前是空的。</p>'; updateCartBadge(); $('#cartSub').textContent=money(0); $('#cartTotal').textContent=money(80); return; }
+
+    state.cart.forEach(item=>{
+      const row = document.createElement('div'); row.className='line';
+      row.innerHTML = `
+        <div style="max-width:72%">
+          <div style="font-weight:700">${item.name}｜${item.size}</div>
+          <div class="muted" style="font-size:12px">${item.geometry} / ${item.palette} / ${item.brush} / ${item.accent}${item.text?`｜\u3010${item.text}\u3011`:''}</div>
+          <div class="muted" style="font-size:12px">單價 ${money(item.price)} × <input type="number" min="1" value="${item.qty}" data-qty="${item.id}" style="width:64px"> = <strong>${money(item.price*item.qty)}</strong></div>
+        </div>
+        <div>
+          <button class="btn danger" data-remove="${item.id}">刪除</button>
+        </div>`;
+      box.appendChild(row);
+    });
+
+    box.querySelectorAll('input[data-qty]').forEach(inp=>inp.addEventListener('input',(e)=>{
+      const it = state.cart.find(x=>x.id===e.target.dataset.qty); it.qty = Math.max(1, parseInt(e.target.value||1)); saveCart();
+    }));
+    box.querySelectorAll('button[data-remove]').forEach(btn=>btn.addEventListener('click',()=>removeItem(btn.dataset.remove)));
+
+    const sub = state.cart.reduce((a,b)=>a + b.price*b.qty, 0);
+    $('#cartSub').textContent = money(sub);
+    $('#cartTotal').textContent = money(sub+80);
+  }
+  function removeItem(id){ state.cart = state.cart.filter(x=>x.id!==id); saveCart(); }
+  function clearCart(){ state.cart = []; saveCart(); }
+
+  // ---------- Order Summary ----------
+  function renderOrderSummary(){
+    const box = $('#orderSummary');
+    if(state.cart.length===0){ box.innerHTML='<p class="muted">購物車為空，請先加入商品。</p>'; $('#sumSub').textContent=money(0); $('#sumTotal').textContent=money(80); return; }
+    box.innerHTML = state.cart.map(it=>`<div class="line"><div>${it.name}｜${it.size}<br><span class="muted" style="font-size:12px">${it.geometry}/${it.palette}/${it.brush}/${it.accent}${it.text?`｜\u3010${it.text}\u3011`:''}</span></div><div>${money(it.price)} × ${it.qty}</div></div>`).join('');
+    const sub = state.cart.reduce((a,b)=>a + b.price*b.qty, 0);
+    $('#sumSub').textContent = money(sub);
+    $('#sumTotal').textContent = money(sub+80);
+  }
+
+  // ---------- Checkout ----------
+  $('#checkoutForm').addEventListener('submit', (e)=>{
+    e.preventDefault();
+    if(state.cart.length===0){ alert('購物車為空'); return; }
+    const order = collectOrder();
+    alert('已收到訂單。');
+    console.log('ORDER', order);
+    // For demo, clear cart after "submit"
+    clearCart(); renderCart(); renderOrderSummary();
+  });
+
+  function collectOrder(){
+    const sub = state.cart.reduce((a,b)=>a + b.price*b.qty, 0);
+    return {
+      company:{name:'新派科技有限公司', taxId:'60485361'},
+      timestamp: new Date().toISOString(),
+      items: state.cart,
+      summary:{subtotal:sub, shipping:80, total:sub+80},
+      contact:{
+        name: $('#name').value, email: $('#email').value, phone: $('#phone').value,
+        zipcode: $('#zipcode').value, address: $('#address').value, note: $('#note').value
+      }
+    };
+  }
+
+  function downloadOrderJSON(){
+    const order = collectOrder();
+    const blob = new Blob([JSON.stringify(order, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `order_${Date.now()}.json`; a.click(); URL.revokeObjectURL(url);
+  }
+
+  // ---------- Hero Random Preview ----------
+  function newDesign(){ drawCubist($('#heroPreview'), {palette: ['teal','warm','mono','fiesta','rose'][Math.floor(Math.random()*5)], geometry:['cubes','facets','lines','faces'][Math.floor(Math.random()*4)], brush:['flat','noise','hatch'][Math.floor(Math.random()*3)], accent:['gold','sky','scarlet','lime'][Math.floor(Math.random()*4)], text:'PICASSO LAB', textPos:['top','center','bottom'][Math.floor(Math.random()*3)]}); }
+
+  // ---------- Init ----------
+  (function init(){
+    document.getElementById('year').textContent = new Date().getFullYear();
+    renderProducts(); renderCart(); renderOrderSummary(); updateCartBadge(); newDesign();
+  })();
+  </script>
+</body>
+</html>
